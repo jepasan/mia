@@ -12,9 +12,16 @@
 #' \code{colData(x)} or either \code{"mean"} or \code{"median"}.
 #' (Default: \code{"median"})
 #'
-#' @param ... optional arguments
+#' @param ... optional arguments passed to
+#' \code{\link[mia:addDissimilarity]{addDissimilarity}}. Additionally:
+#' \itemize{
+#'   \item \code{dimred}: \code{Character scalar}. Specifies the name of
+#'   dimension reduction result from \code{reducedDim(x)}. If used, these
+#'   values are used to calculate divergence instead of the assay. Can be
+#'   disabled with \code{NULL}. (Default: \code{NULL})
+#' }
 #' 
-#' @return \code{x} with additional \code{\link{colData}} named \code{*name*}
+#' @return \code{x} with additional \code{\link{colData}} named \code{name}
 #' 
 #' @details
 #'
@@ -22,17 +29,16 @@
 #' set can be quantified by the average sample dissimilarity or beta
 #' diversity with respect to a given reference sample.
 #'
-#' The calculation makes use of the function `getDissimilarity()`. The
+#' The calculation makes use of the function \code{getDissimilarity()}. The
 #' divergence 
 #' measure is sensitive to sample size. Subsampling or bootstrapping can be 
 #' applied to equalize sample sizes between comparisons.
 #' 
 #' @seealso
-#' \code{\link[scater:plotColData]{plotColData}}
 #' \itemize{
-#'   \item{\code{\link[mia:estimateRichness]{estimateRichness}}}
-#'   \item{\code{\link[mia:estimateEvenness]{estimateEvenness}}}
-#'   \item{\code{\link[mia:estimateDominance]{estimateDominance}}}
+#'   \item \code{\link[mia:addAlpha]{addAlpha}}
+#'   \item \code{\link[mia:addDissimilarity]{addDissimilarity}}
+#'   \item \code{\link[scater:plotColData]{plotColData}}
 #' }
 #' 
 #' @name addDivergence
@@ -103,6 +109,8 @@ setMethod("getDivergence", signature = c(x="SummarizedExperiment"),
         x, assay.type = assay_name, assay_name = "counts", 
         reference = "median", method = "bray", ...){
         ################### Input check ###############
+        # Get altExp if user has specified
+        x <- .check_and_get_altExp(x, ...)
         # Check assay.type
         .check_assay_present(assay.type, x)
         # Check reference
@@ -119,11 +127,11 @@ setMethod("getDivergence", signature = c(x="SummarizedExperiment"),
         }
         ################# Input check end #############
         # Get assay and references
-        mat <- .get_matrix_and_reference(x, assay.type, reference, ref_type)
-        reference <- mat[[2]]
-        mat <- mat[[1]]
+        args <- .get_matrix_and_reference(
+            x, assay.type, reference, ref_type, ...)
         # Calculate sample-wise divergence
-        res <- .calc_divergence(mat, reference, method, ...)
+        args <- c(args, list(method = method), list(...))
+        res <- do.call(.calc_divergence, args)
         # Get only values and ensure that their order is correct
         res <- res[match(colnames(x), res[["sample"]]), "value"]
         return(res)
@@ -162,16 +170,34 @@ setMethod("getDivergence", signature = c(x="SummarizedExperiment"),
 }
 
 # This function gets the abundance table along with reference information
+#' @importFrom SingleCellExperiment reducedDimNames reducedDim
 .get_matrix_and_reference <- function(
-        x, assay.type, reference, ref_type,
-        ref.name = "temporal_reference_for_divergence"){
+        x, assay.type, reference, ref_type, dimred = NULL,
+        ref.name = "temporal_reference_for_divergence", ...){
     #
     if( !.is_a_string(ref.name) ){
         stop("'ref.name' must be a single character value.", call. = FALSE)
     }
     #
-    # Get assay
-    mat <- assay(x, assay.type)
+    if( !is.null(dimred) && !is(x, "SingleCellExperiment") ){
+        stop("If 'dimred' is specified, 'x' must be SingleCellExperiment.",
+            call. = FALSE)
+    }
+    #
+    if( !(is.null(dimred) || (
+        (.is_a_string(dimred) && dimred %in% reducedDimNames(x)) ||
+        .is_integer(dimred) && dimred > 0 && dimred <= length(reducedDims(x))
+        ))){
+        stop("'dimred' must be NULL or specify a name from reducedDimNames(x).",
+            call.= FALSE)
+    }
+    # Get assay or reducedDim
+    if( is.null(dimred) ){
+        mat <- assay(x, assay.type)
+    } else{
+        mat <- t(reducedDim(x, dimred))
+    }
+    
     # If reference type is median or mean, calculate it
     if( ref_type %in% c("median", "mean") ){
         reference <- apply(mat, 1, ref_type)
@@ -190,6 +216,11 @@ setMethod("getDivergence", signature = c(x="SummarizedExperiment"),
     # If the reference is only one sample, replicate it to cover all samples
     if( .is_a_string(reference) ){
         reference <- rep(reference, ncol(mat))
+    }
+    # Check that all reference samples are included in the data
+    if( !all(reference %in% colnames(mat)) ){
+        stop("All reference samples must be included in the data.",
+            call. = FALSE)
     }
     # Return a list with matrix and reference samples for each sample
     res <- list(mat, reference)
