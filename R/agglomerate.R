@@ -23,9 +23,6 @@
 #'   regarded as empty. (Default: \code{c(NA, "", " ", "\t")}). They will be
 #'   removed if \code{na.rm = TRUE} before agglomeration.
 #'
-#' @param update.tree \code{Logical scalar}. Should
-#'   \code{rowTree()} also be agglomerated? (Default: \code{FALSE})
-#'
 #' @param agglomerateTree Deprecated. Use \code{update.tree} instead.
 #' 
 #' @param agglomerate.tree Deprecated. Use \code{update.tree} instead.
@@ -450,16 +447,18 @@ setMethod(
 
 # Agglomerate all rowTrees found in TreeSE object. Get tips that represent
 # rows and remove all others.
+#' @importFrom TreeSummarizedExperiment subsetByLeaf
 .agglomerate_trees <- function(x, by = 1, ...){
     # Get right functions based on direction
     tree_names_FUN <- switch(
         by, "1" = rowTreeNames, "2" = colTreeNames, stop("."))
     links_FUN <- switch(by, "1" = rowLinks, "2" = colLinks, stop("."))
     tree_FUN <- switch(by, "1" = rowTree, "2" = colTree, stop("."))
-    # Get right argument names for changeTree call
+    # Get right argument names for subsetByLeaf call
     args_names <- switch(
-        by, "1" = c("x", "rowTree", "rowNodeLab", "whichRowTree"),
-        "2" = c("x", "colTree", "colNodeLab", "whichColTree"),
+        by,
+        "1" = c("x", "rowLeaf", "whichRowTree", "updateTree"),
+        "2" = c("x", "colLeaf", "whichColTree", "updateTree"),
         stop("."))
     # Get names of trees and links between trees and rows
     tree_names <- tree_names_FUN(x)
@@ -475,11 +474,9 @@ setMethod(
             # Get names of nodes that are preserved
             links_temp <- links_temp[["nodeLab"]]
             # Agglomerate the tree
-            tree <- .prune_tree(tree, links_temp, ...)
-            # Change the tree with agglomerated version
-            args <- list(x, tree, links_temp, name)
+            args <- list(x, links_temp, name, TRUE)
             names(args) <- args_names
-            x <- do.call(changeTree, args)
+            x <- do.call(subsetByLeaf, args)
         }
     }
     return(x)
@@ -507,12 +504,22 @@ setMethod(
         # even after pruning; these rows have still child-nodes that represent
         # other rows.
         # Suppress warning: drop all tips of the tree: returning NULL
-        suppressWarnings(
-            tree <- drop.tip(
+        tree <- tryCatch({
+            drop.tip(
                 tree, remove_tips,
                 trim.internal = FALSE,
                 collapse.singles = FALSE)
-        )
+        }, warning = function(w) {
+            # Do nothing on warning
+        }, error = function(e) {
+            # Try to prune by also pruning internal nodes. Sometimes that is the
+            # case; we need to trim also internal nodes in order to prune
+            # leaf.
+            drop.tip(
+                tree, remove_tips,
+                trim.internal = TRUE,
+                collapse.singles = FALSE)
+        })
         # If all tips were dropped, the result is NULL --> stop loop
         if( is.null(tree) ){
             warning("Pruning resulted to empty tree.", call. = FALSE)
