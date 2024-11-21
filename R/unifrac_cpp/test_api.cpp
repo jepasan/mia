@@ -13,6 +13,7 @@
  * test harness adapted from 
  * https://github.com/noporpoise/BitArray/blob/master/dev/bit_array_test.c
  */
+
 const char *suite_name;
 char suite_pass;
 int suites_run = 0, suites_failed = 0, suites_empty = 0;

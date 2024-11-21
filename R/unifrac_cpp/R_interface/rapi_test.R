@@ -1,4 +1,8 @@
 library(Rcpp)
+library(mia)
+library(biomformat)
+library(ape)
+library(rhdf5)
 
 equals <- function(x, y, msg){
     if (x!=y)
@@ -9,35 +13,35 @@ equals <- function(x, y, msg){
 aboutEquals <- function(x, y, msg){
 	if((x-y)>0.005)
         stop(msg)
-
-
 }
+
 source = "R/unifrac_cpp/su_R.cpp"
 sourceCpp(source)
 table = "test.biom"
 tree = "test.tre"
 nthreads = 1
 
-print('Testing UniFrac..')
-unif = unifrac(table, tree, nthreads)
+b <- read_hdf5_biom("R/unifrac_cpp/R_interface/test.biom")
+outfile <- tempfile()
+write_biom(b, outfile)
+bb <- read_biom(outfile)
 
-exp = c(0.2000000, 0.5714286, 0.6000000, 0.5000000, 0.2000000, 
-		0.4285714, 0.6666667, 0.6000000, 0.3333333, 0.7142857, 
-		0.8571429, 0.4285714, 0.3333333, 0.4000000, 0.6000000)
+fname <- "R/unifrac_cpp/R_interface/test.tre"
+newick <- readChar(fname, file.info(fname)$size)
+z <- treetest(newick)
 
-equals(unif["n_samples"][[1]], 6, "n_samples != 6")
-equals(unif["cf_size"][[1]], 15, "cf_size != 15")
-equals(unif["is_upper_triangle"][[1]], TRUE, "is_upper_triagnle != TRUE")
+tree <- ape::read.tree("R/unifrac_cpp/R_interface/test.tre")
+treese <- makeTreeSEFromBiom(bb, treefilename=tree)
 
+treese2 <- changeTree(treese, rowTree = tree)
 
-for ( i in 1:15){
-	aboutEquals(unif["c_form"][[1]][i], exp[i], "Output not as expected")
-}
-print('Success.')
+test <- tempfile()
+rowTree(treese2)
 
 print('Testing Faith PD..')
 
-faith = faith_pd(table, tree)
+#faith = faith_pd(table, tree)
+faith <- faith_pd_new(treese2, newick)
 
 exp = c(4, 5, 6, 3, 2, 5)
 

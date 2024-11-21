@@ -11,8 +11,16 @@
 
 #include <fcntl.h>
 #include <unistd.h>
-#include <sys/mman.h>
-#include <lz4.h>
+
+/* Platform-specific memory management headers - for windows, we need to add  #if defined(_WIN32) and rewrite the mmap portions  (possibly with memoryapi.h?)*/
+#ifdef __linux__
+#include <sys/mman.h> 
+#elif _WIN32
+#include <memoryapi.h>
+#endif
+
+/* Fast compression algorithm */
+#include <lz4.h> 
 
 #define MMAP_FD_MASK 0x0fff
 #define MMAP_FLAG    0x1000
@@ -167,20 +175,30 @@ void initialize_mat_full_no_biom_T(TMat* &result, const char* const * sample_ids
     } else {
       std::string mmap_template(mmap_dir);
       mmap_template+="/su_mmap_XXXXXX";
-      // note: mkostemp will update mmap_template in place
-      int fd=mkostemp((char *) mmap_template.c_str(), O_NOATIME ); 
-      if (fd<0) {
-         result->matrix = NULL;
-         // leave error handling to the caller
-      } else {
-        // remove the file name, so it will be destroyed on close
-        unlink(mmap_template.c_str());
-        // make it big enough
-        ftruncate(fd,msize);
-        // now can be used, just like a malloc-ed buffer
-        result->matrix = (TReal*)mmap(NULL, msize,PROT_READ|PROT_WRITE, MAP_SHARED|MAP_NORESERVE, fd, 0);
-        result->flags=(uint32_t(fd) & MMAP_FD_MASK) | MMAP_FLAG;
-      }
+      
+      #ifdef __linux__  // Linux-specific memory handling
+      
+          // note: mkostemp will update mmap_template in place
+          int fd=mkostemp((char *) mmap_template.c_str(), O_NOATIME ); // replace for windows
+          
+          if (fd<0) {
+              result->matrix = NULL;
+              // leave error handling to the caller
+          } else {
+              // remove the file name, so it will be destroyed on close
+              unlink(mmap_template.c_str());
+              // make it big enough
+              ftruncate(fd,msize);
+              // now can be used, just like a malloc-ed buffer
+              result->matrix = (TReal*)mmap(NULL, msize,PROT_READ|PROT_WRITE, MAP_SHARED|MAP_NORESERVE, fd, 0); // replace for windows
+              result->flags=(uint32_t(fd) & MMAP_FD_MASK) | MMAP_FLAG;
+          }
+          
+      #elif _WIN32      // Windows-specific memory handling
+      
+          
+      
+      #endif
    }
 
     for(unsigned int i = 0; i < n_samples; i++) {
@@ -244,7 +262,7 @@ inline void destroy_mat_full_T(TMat** result) {
          free((*result)->matrix);            
       } else {
          uint64_t n_samples = (*result)->n_samples;
-         munmap((*result)->matrix, sizeof(TReal)*n_samples*n_samples);
+         munmap((*result)->matrix, sizeof(TReal)*n_samples*n_samples); // replace for windows
 
          int fd = (*result)->flags & MMAP_FD_MASK;
          close(fd);
@@ -902,7 +920,7 @@ IOStatus write_vec(const char* output_filename, r_vec* result) {
 }
 
 IOStatus write_partial(const char* output_filename, const partial_mat_t* result) {
-    int fd = open(output_filename, O_WRONLY | O_CREAT | O_TRUNC,  S_IRUSR |  S_IWUSR );
+    int fd = open(output_filename, O_WRONLY | O_CREAT | O_TRUNC,  S_IRUSR |  S_IWUSR ); // replace for windows
     if (fd==-1) return write_error;
 
     int cnt = -1;
