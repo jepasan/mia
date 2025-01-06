@@ -21,21 +21,20 @@ namespace su {
  template<class TFloat>
  class PropStack {
    private:
-     std::stack<TFloat*> prop_stack;
-     std::unordered_map<uint32_t, TFloat*> prop_map;
+     std::stack<std::vector<TFloat>> prop_stack;
+     std::unordered_map<uint32_t, std::vector<TFloat>> prop_map;
      uint32_t defaultsize;
    public:
      PropStack(uint32_t vecsize);
      virtual ~PropStack();
-     TFloat* pop(uint32_t i);
-     void push(uint32_t i);
-     TFloat* get(uint32_t i);
+     void clear(uint32_t i);
+     void update(uint32_t i, std::vector<TFloat> vec);
+     std::vector<TFloat> get(uint32_t i);
  };
 
  template<class TFloat>
- void set_proportions(TFloat* __restrict__ props,
-                      const BPTree &tree, uint32_t node,
-                      const biom_interface &table,
+ std::vector<TFloat> set_proportions(const BPTree &tree, uint32_t node,
+                      const tse_interface &table,
                       PropStack<TFloat> &ps,
                       bool normalize = true);
 

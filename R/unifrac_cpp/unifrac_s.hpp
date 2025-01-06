@@ -13,17 +13,16 @@
 #include <thread>
 #include <pthread.h>
 
+#include <Rcpp.h>
+
 #ifndef __UNIFRAC
 
 #include "task_parameters.hpp"
-#include "biom_interface.hpp"
+#include "biom_interface_s.hpp"
+#include "tree_s.hpp"
 
     namespace su {
-    
-        void faith_pd(biom_interface &table, BPTree &tree, double* result);
-    
-        std::string test_table_ids_are_subset_of_tree(biom_interface &table, BPTree &tree);
-        
+        std::vector<double> faith_pd(tse_interface &table, su::BPTree &tree);
     }
     
 #define __UNIFRAC 1

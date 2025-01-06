@@ -21,51 +21,40 @@
 
 #include "unifrac_internal_s.hpp"
 
+#include <Rcpp.h>
+
 using namespace su;
-
-std::string su::test_table_ids_are_subset_of_tree(su::biom_interface &table, su::BPTree &tree) {
-    std::unordered_set<std::string> tip_names = tree.get_tip_names();
-    std::unordered_set<std::string>::const_iterator hit;
-    std::string a_missing_name = "";
-
-    for(auto i : table.obs_ids) {
-        hit = tip_names.find(i);
-        if(hit == tip_names.end()) {
-            a_missing_name = i;
-            break;
-        }
-    }
-
-    return a_missing_name;
-}
-
-
 
 // Computes Faith's PD for the samples in  `table` over the phylogenetic
 // tree given by `tree`.
 // Assure that tree does not contain ids that are not in table
-void su::faith_pd(biom_interface &table,
-                  BPTree &tree,
-                  double* result) {
-    PropStack<double> propstack(table.n_samples);
+std::vector<double> su::faith_pd(tse_interface &table,
+                  BPTree &tree) {
+    PropStack<double> propstack(table.n_samples); // construction seems to go okay
 
+    
     uint32_t node;
-    double *node_proportions;
+    std::vector<double> node_proportions;
     double length;
+    
+    std::vector<double> results = std::vector<double>();
 
     // for node in postorderselect
     for(unsigned int k = 0; k < (tree.nparens / 2) - 1; k++) {
         node = tree.postorderselect(k);
+        
         // get branch length
         length = tree.lengths[node];
-
+        
         // get node proportions and set intermediate scores
-        node_proportions = propstack.pop(node);
-        set_proportions(node_proportions, tree, node, table, propstack);
-
+        
+        node_proportions = set_proportions(tree, node, table, propstack);
+        
         for (unsigned int sample = 0; sample < table.n_samples; sample++){
             // calculate contribution of node to score
-            result[sample] += (node_proportions[sample] > 0) * length;
+            results.push_back((node_proportions[sample] > 0) * length);
         }
     }
+    return results;
+    //return(std::vector<double>());
 }

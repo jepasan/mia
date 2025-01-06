@@ -15,7 +15,7 @@ aboutEquals <- function(x, y, msg){
         stop(msg)
 }
 
-source = "R/unifrac_cpp/su_R.cpp"
+source = "R/unifrac_cpp/su_R_s.cpp"
 sourceCpp(source)
 table = "test.biom"
 tree = "test.tre"
@@ -26,22 +26,36 @@ outfile <- tempfile()
 write_biom(b, outfile)
 bb <- read_biom(outfile)
 
+
 fname <- "R/unifrac_cpp/R_interface/test.tre"
+tree <- ape::rtree(500)
+ape::write.tree(tree, file = fname, append = FALSE)
+
 newick <- readChar(fname, file.info(fname)$size)
+tree <- ape::read.tree(fname)
+
+identical(treetest(newick), treetest2(tree))
 z <- treetest(newick)
 
-tree <- ape::read.tree("R/unifrac_cpp/R_interface/test.tre")
-treese <- makeTreeSEFromBiom(bb, treefilename=tree)
+tree2 <- ape::reorder.phylo(tree, "postorder")
+tree3 <- ape::read.tree("R/unifrac_cpp/R_interface/test2.tre")
 
+treese <- makeTreeSEFromBiom(bb, treefilename=tree)
 treese2 <- changeTree(treese, rowTree = tree)
 
-test <- tempfile()
-rowTree(treese2)
 
-print('Testing Faith PD..')
+data(GlobalPatterns, package = "mia")
+data(esophagus, package = "mia")
+tse <- esophagus
+
 
 #faith = faith_pd(table, tree)
-faith <- faith_pd_new(treese2, newick)
+faith_pd_new(tse)
+
+
+
+assays(tse)[[1]]
+colSums(assays(tse)[[1]])
 
 exp = c(4, 5, 6, 3, 2, 5)
 
@@ -54,3 +68,9 @@ print('Success.')
 
 print('All tests pass')
 
+
+#Checks
+#This functions assumes that the tree representation is in cladewise order - Ensure this with ape's reorder.phylo() function
+#Ensure that the tree is non-empty, etc
+#Ensure that the tree doesn't get modified at any point
+#Which assays are normally used for the calculations?
