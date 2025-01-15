@@ -16,6 +16,8 @@
 #include <vector>
 #include <unordered_set>
 
+#include <Rcpp.h>
+
 namespace su {
     class BPTree {
         public:
@@ -26,19 +28,20 @@ namespace su {
             /* total number of parentheses */
             uint32_t nparens;
 
-            /* default constructor
-             *
-             * @param newick A newick string
-             */
-            BPTree(std::string newick);
-            
             /* constructor from a defined topology 
              *
              * @param input_structure A boolean vector defining the topology
              * @param input_lengths A vector of double of the branch lengths
              * @param input_names A vector of str of the vertex names
              */
-            BPTree(std::vector<bool> input_structure, std::vector<double> input_lengths, std::vector<std::string> input_names);
+            BPTree(std::vector<bool> input_structure, std::vector<double> input_lengths, std::vector<std::string> input_names, bool rooted);
+
+            /* constructor from a TreeSummarizedExperiment 
+             *
+             * @param treeSE An R treeSE object
+             */
+            BPTree(const Rcpp::S4 & treeSE, bool rooted);
+            
             ~BPTree();
 
             /* postorder tree traversal
@@ -106,6 +109,7 @@ namespace su {
                 }
                 std::cout << std::endl;
             }
+            
             BPTree mask(std::vector<bool> topology_mask, std::vector<double> in_lengths); // mask self
 
             BPTree shear(std::unordered_set<std::string> to_keep);
@@ -118,16 +122,16 @@ namespace su {
             std::vector<uint32_t> select_0_index; // cache of select 0
             std::vector<uint32_t> select_1_index; // cache of select 1
             std::vector<uint32_t> excess;
+            bool isRooted;                        // Is the tree rooted or not?
 
             void index_and_cache();  // construct the select caches
-            void newick_to_bp(std::string newick);  // convert a newick string to parentheses
+            void rowTree_to_bp(const Rcpp::List & rowTree); // convert ape tree structure to boolean structure
+            void rowTree_to_metadata(const Rcpp::List & rowTree);  // assign attributes
             void newick_to_metadata(std::string newick);  // convert newick to attributes
             void structure_to_openclose();  // set the cache mapping between parentheses pairs
-            void set_node_metadata(unsigned int open_idx, std::string &token); // set attributes for a node
-            bool is_structure_character(char c) const;  // test if a character is a newick structure
+            void set_node_metadata(unsigned int open_idx, std::string label, double length); // set attributes for a node
             inline uint32_t open(uint32_t i) const;  // obtain the index of the opening for a given parenthesis
             inline uint32_t close(uint32_t i) const;  // obtain the index of the closing for a given parenthesis
-            std::string tokenize(std::string::iterator &start, const std::string::iterator &end);  // newick -> tokens
 
             int32_t bwd(uint32_t i, int32_t d) const;
             int32_t enclose(uint32_t i) const;
