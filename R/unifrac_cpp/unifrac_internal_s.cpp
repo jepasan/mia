@@ -71,6 +71,7 @@ std::vector<TFloat> su::set_proportions(const BPTree &tree,
     if(tree.isleaf(node)) {
         std::string leaf = tree.names[node];
         props = table.get_obs_data(leaf); // Here we basically just need the row for the specified node
+        //std::cout << "l " << props[0] << " " << props[1] << " " << props[2] << "\n";
         if (normalize) {
 //#pragma omp parallel for schedule(static)
             for(unsigned int i = 0; i < table.n_samples; i++) {
@@ -96,6 +97,8 @@ std::vector<TFloat> su::set_proportions(const BPTree &tree,
             
             current = tree.rightsibling(current);
         }
+        
+        //std::cout << "n " << props[0] << " " << props[1] << " " << props[2] << "\n";
         
     }
     ps.update(node, props);

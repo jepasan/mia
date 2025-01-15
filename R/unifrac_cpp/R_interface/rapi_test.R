@@ -1,76 +1,65 @@
 library(Rcpp)
 library(mia)
-library(biomformat)
+library(miaSim)
 library(ape)
-library(rhdf5)
-
-equals <- function(x, y, msg){
-    if (x!=y)
-        stop(msg)
-
-
-}
-aboutEquals <- function(x, y, msg){
-	if((x-y)>0.005)
-        stop(msg)
-}
+library(picante)
 
 source = "R/unifrac_cpp/su_R_s.cpp"
 sourceCpp(source)
-table = "test.biom"
-tree = "test.tre"
-nthreads = 1
-
-b <- read_hdf5_biom("R/unifrac_cpp/R_interface/test.biom")
-outfile <- tempfile()
-write_biom(b, outfile)
-bb <- read_biom(outfile)
-
-
-fname <- "R/unifrac_cpp/R_interface/test.tre"
-tree <- ape::rtree(500)
-ape::write.tree(tree, file = fname, append = FALSE)
-
-newick <- readChar(fname, file.info(fname)$size)
-tree <- ape::read.tree(fname)
-
-identical(treetest(newick), treetest2(tree))
-z <- treetest(newick)
-
-tree2 <- ape::reorder.phylo(tree, "postorder")
-tree3 <- ape::read.tree("R/unifrac_cpp/R_interface/test2.tre")
-
-treese <- makeTreeSEFromBiom(bb, treefilename=tree)
-treese2 <- changeTree(treese, rowTree = tree)
-
 
 data(GlobalPatterns, package = "mia")
 data(esophagus, package = "mia")
-tse <- esophagus
+data(HintikkaXOData, package = "mia")
+data(Tengeler2020, package = "mia") # This dataset produces divergent values for some reason - Presumably something to do with the tree being unrooted
+tse <- Tengeler2020
+rowTree(tse) <- ape::reorder.phylo(rowTree(tse), "cladewise")
 
+ts1 <- rowTree(tse)
 
-#faith = faith_pd(table, tree)
-faith_pd_new(tse)
+fname <- "R/unifrac_cpp/R_interface/tree.tre"
+ape::write.tree(ts1, fname)
 
+newick <- readChar(fname, file.info(fname)$size)
 
+y <- rowTree_to_bp(ts1)
+x <- newick_to_bp(newick)
 
-assays(tse)[[1]]
-colSums(assays(tse)[[1]])
+faith <- faith_pd(tse, is.rooted(rowTree(tse)))
+x <- estimateDiversity(tse)
+faith2 <- colData(x)$faith
 
-exp = c(4, 5, 6, 3, 2, 5)
-
-equals(faith["n_samples"][[1]], 6, "n_samples != 6")
-for ( i in 1:6){
-	aboutEquals(faith["faith_pd"][[1]][i], exp[i], "Output not as expected")
-}
-
-print('Success.')
-
-print('All tests pass')
-
+faith - faith2
 
 #Checks
 #This functions assumes that the tree representation is in cladewise order - Ensure this with ape's reorder.phylo() function
 #Ensure that the tree is non-empty, etc
 #Ensure that the tree doesn't get modified at any point
 #Which assays are normally used for the calculations?
+
+
+
+
+
+tse2 <- estimateDiversity(tse_hubbell, index = "faith")
+colData(tse2)$faith
+faith_pd(tse_hubbell)
+
+
+t <- ape::rtree(12706, rooted = F, tip.label = rownames(tse2))
+tse2 <- tse[[1]]
+rowTree(tse2) <- t
+tse2 <- estimateDiversity(tse2)
+faith2 <- colData(tse2)$faith
+faith <- faith_pd(tse2, T)
+faith - faith2
+
+data(phylocom, package = "picante")
+x <- phylocom$sample
+y <- assay(tse)
+t1 <- phylocom$phylo
+t2 <- rowTree(tse)
+picante::pd(x, t1)
+picante::pd(t(y), t2, include.root=F)
+
+
+rowTree(tse) <- ape::reorder.phylo(rowTree(tse), "cladewise")

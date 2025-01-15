@@ -6,7 +6,9 @@
 
 using namespace su;
 
-BPTree::BPTree(std::vector<bool> input_structure, std::vector<double> input_lengths, std::vector<std::string> input_names) {
+BPTree::BPTree(std::vector<bool> input_structure, std::vector<double> input_lengths, std::vector<std::string> input_names, bool rooted) {
+    isRooted = rooted;
+    
     structure = input_structure;
     lengths = input_lengths;
     names = input_names;
@@ -25,7 +27,9 @@ BPTree::BPTree(std::vector<bool> input_structure, std::vector<double> input_leng
     index_and_cache();
 }
 
-BPTree::BPTree(const Rcpp::S4 & treeSE) {
+BPTree::BPTree(const Rcpp::S4 & treeSE, bool rooted) {
+    
+    isRooted = rooted;
     
     //Initialize vectors
     openclose = std::vector<uint32_t>();
@@ -96,7 +100,7 @@ BPTree BPTree::mask(std::vector<bool> topology_mask, std::vector<double> in_leng
         }
     }
     
-    return BPTree(new_structure, new_lengths, new_names);
+    return BPTree(new_structure, new_lengths, new_names, isRooted);
 }
 
 std::unordered_set<std::string> BPTree::get_tip_names() {
@@ -284,6 +288,9 @@ int32_t BPTree::bwd(uint32_t i, int d) const {
 // The algorithms that this class uses need the tree to be stored in a binary format
 // In terms of the Newick format, an opening bracket corresponds to a TRUE, a closing bracket to a FALSE, and a tip to a TRUE FALSE
 // This functions assumes that the tree representation is in cladewise order - Ensure this with ape's reorder.phylo() function
+// Need to check whether tree being rooted or not affects construction
+// If rooted, root is by definition ntips+1
+// If unrooted, root is chosen arbitrarily?
 void BPTree::rowTree_to_bp(const Rcpp::List & rowTree) {
     Rcpp::List phylo = rowTree["phylo"];
     Rcpp::NumericMatrix edge = phylo["edge"];
@@ -295,7 +302,6 @@ void BPTree::rowTree_to_bp(const Rcpp::List & rowTree) {
     
     int currentNode = 0;
     int nextNode = 0;
-    
     
     // Goal: Insert true when a branch starts, a false when it closes, and a true-false for each tip.
     
@@ -313,8 +319,10 @@ void BPTree::rowTree_to_bp(const Rcpp::List & rowTree) {
         
         if(nodes.size() == 0 || currentNode > nodes.top() ) {
             // We are either at the root, or entering a new node
+            // What if the tree is unrooted?
             nodes.push(currentNode);
             structure.push_back(true);
+            
         }
         
         if(nextNode <= ntips) {

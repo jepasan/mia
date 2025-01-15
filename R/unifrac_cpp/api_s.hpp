@@ -22,4 +22,4 @@
  * tree_missing   : the filename for the tree does not exist
  * table_empty    : the table does not have any entries
  */
-std::vector<double> faith_pd_one_off(const Rcpp::S4 & treeSE);
+std::vector<double> faith_pd_one_off(const Rcpp::S4 & treeSE, bool rooted);

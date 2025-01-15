@@ -29,6 +29,11 @@ tse::tse(const Rcpp::S4 & treeSE) {
     Rcpp::List phylo = rowTree["phylo"];
     Rcpp::StringVector tip_label = phylo["tip.label"];
     obs_ids = Rcpp::as<std::vector<std::string>>(tip_label);
+    
+    Rcpp::S4 assays = treeSE.slot("assays");
+    Rcpp::S4 data = assays.slot("data");
+    Rcpp::List listData = data.slot("listData");
+    assay = Rcpp::as<Rcpp::NumericMatrix>(listData["counts"]);
 
     n_samples = sample_ids.size();
     n_obs = obs_ids.size();

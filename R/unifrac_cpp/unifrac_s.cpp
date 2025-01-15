@@ -37,7 +37,7 @@ std::vector<double> su::faith_pd(tse_interface &table,
     std::vector<double> node_proportions;
     double length;
     
-    std::vector<double> results = std::vector<double>();
+    std::vector<double> results = std::vector<double>(table.n_samples, 0.0);
 
     // for node in postorderselect
     for(unsigned int k = 0; k < (tree.nparens / 2) - 1; k++) {
@@ -52,7 +52,8 @@ std::vector<double> su::faith_pd(tse_interface &table,
         
         for (unsigned int sample = 0; sample < table.n_samples; sample++){
             // calculate contribution of node to score
-            results.push_back((node_proportions[sample] > 0) * length);
+            results[sample] += (node_proportions[sample] > 0) * length;
+            //std::cout << node_proportions[sample] << " " << (node_proportions[sample] > 0) * length << " " << results[sample] << " - ";
         }
     }
     return results;

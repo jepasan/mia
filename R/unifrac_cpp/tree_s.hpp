@@ -34,13 +34,13 @@ namespace su {
              * @param input_lengths A vector of double of the branch lengths
              * @param input_names A vector of str of the vertex names
              */
-            BPTree(std::vector<bool> input_structure, std::vector<double> input_lengths, std::vector<std::string> input_names);
+            BPTree(std::vector<bool> input_structure, std::vector<double> input_lengths, std::vector<std::string> input_names, bool rooted);
 
             /* constructor from a TreeSummarizedExperiment 
              *
              * @param treeSE An R treeSE object
              */
-            BPTree(const Rcpp::S4 & treeSE);
+            BPTree(const Rcpp::S4 & treeSE, bool rooted);
             
             ~BPTree();
 
@@ -122,6 +122,7 @@ namespace su {
             std::vector<uint32_t> select_0_index; // cache of select 0
             std::vector<uint32_t> select_1_index; // cache of select 1
             std::vector<uint32_t> excess;
+            bool isRooted;                        // Is the tree rooted or not?
 
             void index_and_cache();  // construct the select caches
             void rowTree_to_bp(const Rcpp::List & rowTree); // convert ape tree structure to boolean structure
