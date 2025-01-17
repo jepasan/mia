@@ -7,6 +7,8 @@
 \alias{subsetByPrevalent}
 \alias{subsetByRare}
 \alias{getPrevalentAbundance}
+\alias{addPrevalence}
+\alias{addPrevalence,SummarizedExperiment-method}
 \alias{getPrevalence,ANY-method}
 \alias{getPrevalence,SummarizedExperiment-method}
 \alias{getPrevalent,ANY-method}
@@ -37,6 +39,10 @@ getPrevalentAbundance(
   assay_name = "relabundance",
   ...
 )
+
+addPrevalence(x, ...)
+
+\S4method{addPrevalence}{SummarizedExperiment}(x, name = "prevalence", ...)
 
 \S4method{getPrevalence}{ANY}(
   x,
@@ -129,6 +135,10 @@ calculation. (Default: \code{"counts"})}
 
 \item{assay_name}{Deprecated. Use \code{assay.type} instead.}
 
+\item{name}{\code{Character scalar}. Specifies name of column in
+\code{rowData} where the results will be stored.
+(Default: \code{"prevalence"})}
+
 \item{detection}{\code{Numeric scalar}. Detection threshold for
 absence/presence. If \code{as_relative = FALSE},
 it sets the counts threshold for a taxon to be considered present.
@@ -164,7 +174,8 @@ All other functions return a named vectors:
 \itemize{
 \item \code{getPrevalence} returns a \code{numeric} vector with the
 names being set to either the row names of \code{x} or the names after
-agglomeration.
+agglomeration. \code{addPrevalence} adds these results to
+\code{rowData(x)}.
 
 \item \code{getPrevalentAbundance} returns a \code{numeric} vector with
 the names corresponding to the column name of \code{x} and include the
