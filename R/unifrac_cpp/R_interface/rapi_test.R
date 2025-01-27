@@ -4,14 +4,14 @@ library(miaSim)
 library(ape)
 library(picante)
 
-source = "R/unifrac_cpp/su_R_s.cpp"
+source = "R/unifrac_cpp/su_R.cpp"
 sourceCpp(source)
 
 data(GlobalPatterns, package = "mia")
 data(esophagus, package = "mia")
 data(HintikkaXOData, package = "mia")
 data(Tengeler2020, package = "mia") # This dataset produces divergent values for some reason - Presumably something to do with the tree being unrooted
-tse <- Tengeler2020
+tse <- GlobalPatterns
 rowTree(tse) <- ape::reorder.phylo(rowTree(tse), "cladewise")
 
 ts1 <- rowTree(tse)
@@ -24,8 +24,8 @@ newick <- readChar(fname, file.info(fname)$size)
 y <- rowTree_to_bp(ts1)
 x <- newick_to_bp(newick)
 
-faith <- faith_pd(tse, is.rooted(rowTree(tse)))
-x <- estimateDiversity(tse)
+faith <- faith_cpp(tse)
+x <- estimateDiversity(tse, index="faith")
 faith2 <- colData(x)$faith
 
 faith - faith2

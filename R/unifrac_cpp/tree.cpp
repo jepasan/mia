@@ -7,8 +7,7 @@
 
 using namespace su;
 
-BPTree::BPTree(std::vector<bool> input_structure, std::vector<double> input_lengths, std::vector<std::string> input_names, bool rooted) {
-    isRooted = rooted;
+BPTree::BPTree(std::vector<bool> input_structure, std::vector<double> input_lengths, std::vector<std::string> input_names) {
     
     structure = input_structure;
     lengths = input_lengths;
@@ -28,9 +27,7 @@ BPTree::BPTree(std::vector<bool> input_structure, std::vector<double> input_leng
     index_and_cache();
 }
 
-BPTree::BPTree(const Rcpp::S4 & treeSE, bool rooted) {
-    
-    isRooted = rooted;
+BPTree::BPTree(const Rcpp::S4 & treeSE) {
     
     //Initialize vectors
     openclose = std::vector<uint32_t>();
@@ -47,8 +44,6 @@ BPTree::BPTree(const Rcpp::S4 & treeSE, bool rooted) {
     const Rcpp::List & rowTree = treeSE.slot("rowTree");
     rowTree_to_bp(rowTree); //Also sets the size of nparens
     
-    std::cout << "BP ok\n";
-    
     //Resize vectors
     // resize is correct here as we are not performing a push_back
     openclose.resize(nparens);
@@ -61,14 +56,11 @@ BPTree::BPTree(const Rcpp::S4 & treeSE, bool rooted) {
     
     //Builds a vector that lets us find the corresponding indices for each true/false pair
     structure_to_openclose();
-    std::cout << "structure ok\n";
     //Get metadata
     rowTree_to_metadata(rowTree);
-    std::cout << "metadata ok\n";
     
     //Finalize
-    index_and_cache(); // This causes a crash for some reason
-    std::cout << "cache ok\n";
+    index_and_cache();
 }
 
 
@@ -101,7 +93,7 @@ BPTree BPTree::mask(std::vector<bool> topology_mask, std::vector<double> in_leng
         }
     }
     
-    return BPTree(new_structure, new_lengths, new_names, isRooted);
+    return BPTree(new_structure, new_lengths, new_names);
 }
 
 std::unordered_set<std::string> BPTree::get_tip_names() {

@@ -8,8 +8,8 @@
  */
 
 #include "tree.hpp"
-#include "biom_interface.hpp"
-#include "unifrac_internal.hpp"
+#include "tse.hpp"
+#include "propstack.hpp"
 
 #include <cstdlib>
 #include <thread>
@@ -23,8 +23,7 @@
 
 using namespace su;
 
-template<class TFloat>
-PropStack<TFloat>::PropStack(uint32_t vecsize) 
+PropStack::PropStack(uint32_t vecsize) 
 : prop_stack()
 , prop_map()
 , defaultsize(vecsize)
@@ -32,47 +31,36 @@ PropStack<TFloat>::PropStack(uint32_t vecsize)
     prop_map.reserve(1000);
 }
 
-template<class TFloat>
-PropStack<TFloat>::~PropStack() {
+PropStack::~PropStack() {
 }
 
-template<class TFloat>
-std::vector<TFloat> PropStack<TFloat>::get(uint32_t i) {
+std::vector<double> PropStack::get(uint32_t i) {
     if(prop_map.count(i) > 0){
         return prop_map.at(i);
     }
     else {
-        return(std::vector<TFloat>());  
+        return(std::vector<double>());  
     } 
 }
 
-template<class TFloat>
-void PropStack<TFloat>::clear(uint32_t i) {
-    prop_map[i] = std::vector<TFloat>();
+void PropStack::clear(uint32_t i) {
+    prop_map[i] = std::vector<double>();
 }
 
-template<class TFloat>
-void PropStack<TFloat>::update(uint32_t node, std::vector<TFloat> vec) {
+void PropStack::update(uint32_t node, std::vector<double> vec) {
     prop_map[node] = vec;
 }
 
-// make sure they get instantiated
-template class su::PropStack<float>;
-template class su::PropStack<double>;
-
-
-template<class TFloat>
-std::vector<TFloat> su::set_proportions(const BPTree &tree,
+std::vector<double> su::set_proportions(const BPTree &tree,
                          uint32_t node,
-                         const tse_interface &table,
-                         PropStack<TFloat> &ps,
+                         const tse &table,
+                         PropStack &ps,
                          bool normalize) {
     
-    std::vector<TFloat> props = std::vector<TFloat>();
+    std::vector<double> props = std::vector<double>();
     if(tree.isleaf(node)) {
         std::string leaf = tree.names[node];
         props = table.get_obs_data(leaf); // Here we basically just need the row for the specified node
-        //std::cout << "l " << props[0] << " " << props[1] << " " << props[2] << "\n";
         if (normalize) {
 //#pragma omp parallel for schedule(static)
             for(unsigned int i = 0; i < table.n_samples; i++) {
@@ -90,7 +78,7 @@ std::vector<TFloat> su::set_proportions(const BPTree &tree,
         }
         
         while(current <= right && current != 0) {
-            std::vector<TFloat> vec = ps.get(current);  // pull from prop map
+            std::vector<double> vec = ps.get(current);  // pull from prop map
             ps.clear(current);  // remove from prop map, place back on stack
 //#pragma omp parallel for schedule(static)
             for(unsigned int i = 0; i < table.n_samples; i++)
@@ -105,10 +93,3 @@ std::vector<TFloat> su::set_proportions(const BPTree &tree,
     ps.update(node, props);
     return(props);
 }
-
-// make sure they get instantiated
-template std::vector<double> su::set_proportions(const BPTree &tree,
-                                  uint32_t node,
-                                  const tse_interface &table,
-                                  PropStack<double> &ps,
-                                  bool normalize);

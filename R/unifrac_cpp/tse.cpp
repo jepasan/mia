@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <vector>
 
-#include "biom.hpp"
+#include "tse.hpp"
 
 #include <Rcpp.h>
 
@@ -63,29 +63,15 @@ void tse::create_id_index(std::vector<std::string> &ids,
     }
 }
 
-//Basically just gets the row for the specified id
-template<class TFloat>
-std::vector<TFloat> tse::get_obs_data_TT(const std::string &id, TFloat t) const {
-    std::vector<TFloat> out = std::vector<TFloat>();
+
+std::vector<double> tse::get_obs_data(const std::string &id) const {
+    std::vector<double> out = std::vector<double>();
     uint32_t idx = obs_id_index.at(id);
     for(unsigned int i = 0; i < n_samples; i++) {
         out.push_back(assay(idx, i));
     }
     return out;
 }
-
-std::vector<double> tse::get_obs_data(const std::string &id) const {
-    double t = 0.0;
-    return(tse::get_obs_data_TT(id, t));
-}
-
-
-//Returns a pointer-based array - can perhaps be changed to simply referring to the R object's internal storage?
-//What exactly does this array contain? It contains n_samples elements which are doubles.
-//I'm fairly sure that it just sums the counts over samples. Basically just get a column sum.
-//std::vector uses move semantics so it shouldn't affect memory usage too much
-//the R representation is inherently 'dense' so we can just iterate over the columns
-//Might be useful to store?
 
 std::vector<double> tse::get_sample_counts() {
     std::vector<double> sample_counts = std::vector<double>();

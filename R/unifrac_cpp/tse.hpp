@@ -7,20 +7,25 @@
  * See LICENSE file for more details
  */
 
-
-#ifndef _UNIFRAC_BIOM_H
-#define _UNIFRAC_BIOM_H
+#ifndef __FAITH_TSE_H
+#define __FAITH_TSE_H 1
 
 #include <vector>
 #include <unordered_map>
 
-#include "biom_interface.hpp"
-
 #include <Rcpp.h>
 
 namespace su {
-    class tse : public tse_interface {
+    class tse {
         public:
+            // cache the IDs contained within the table
+            std::vector<std::string> sample_ids;
+            std::vector<std::string> obs_ids;
+            
+            uint32_t n_samples;  // the number of samples
+            uint32_t n_obs;      // the number of observations
+            std::vector<double> sample_counts; // Counts summed per sample
+            
             /* default constructor
              *
              * @param treeSE An R TreeSummarizedExperiment object
@@ -31,7 +36,7 @@ namespace su {
              *
              * Temporary arrays are freed
              */
-            virtual ~tse();
+            ~tse();
 
             /* get a dense vector of observation data
              *
@@ -52,23 +57,6 @@ namespace su {
              */
             std::unordered_map<std::string, uint32_t> obs_id_index;
             std::unordered_map<std::string, uint32_t> sample_id_index;
- 
-            /* load ids from an axis
-             *
-             * @param path The dataset path to the ID dataset to load
-             * @param ids The variable representing the IDs to load into
-             */          
-            void load_ids(const char *path, std::vector<std::string> &ids);
-
-            /* load the index pointer for an axis
-             *
-             * @param path The dataset path to the index pointer to load
-             * @param indptr The vector to load the data into
-             */
-            void load_indptr(const char *path, std::vector<uint32_t> &indptr);
-
-            /* count the number of nonzero values and set nnz */
-            void set_nnz();
 
             /* create an index mapping an ID to its corresponding index 
              * position.
@@ -78,12 +66,8 @@ namespace su {
              */
             void create_id_index(std::vector<std::string> &ids, 
                                  std::unordered_map<std::string, uint32_t> &map);
-
-            // templatized version
-            template<class TFloat> std::vector<TFloat> get_obs_data_TT(const std::string &id, TFloat t) const;
-            
      };
 }
 
-#endif /* _UNIFRAC_BIOM_H */
+#endif /* __FAITH_TSE_H */
 
