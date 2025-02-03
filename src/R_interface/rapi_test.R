@@ -4,7 +4,7 @@ library(miaSim)
 library(ape)
 library(picante)
 
-source = "R/unifrac_cpp/su_R.cpp"
+source = "src/faith_R.cpp"
 sourceCpp(source)
 
 data(GlobalPatterns, package = "mia")
