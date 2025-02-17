@@ -8,7 +8,7 @@
  */
 
 #include "tree.hpp"
-#include "tse.hpp"
+#include "assay.hpp"
 #include "propstack.hpp"
 
 #include <cstdlib>
@@ -24,8 +24,7 @@
 using namespace su;
 
 PropStack::PropStack(uint32_t vecsize) 
-: prop_stack()
-, prop_map()
+: prop_map()
 , defaultsize(vecsize)
 {
     prop_map.reserve(1000);
@@ -53,7 +52,7 @@ void PropStack::update(uint32_t node, std::vector<double> vec) {
 
 std::vector<double> su::set_proportions(const BPTree &tree,
                          uint32_t node,
-                         const tse &table,
+                         const Assay &table,
                          PropStack &ps,
                          bool normalize) {
     
@@ -62,7 +61,6 @@ std::vector<double> su::set_proportions(const BPTree &tree,
         std::string leaf = tree.names[node];
         props = table.get_obs_data(leaf); // Here we basically just need the row for the specified node
         if (normalize) {
-//#pragma omp parallel for schedule(static)
             for(unsigned int i = 0; i < table.n_samples; i++) {
                props[i] /= table.sample_counts[i];
             }
@@ -71,8 +69,6 @@ std::vector<double> su::set_proportions(const BPTree &tree,
         unsigned int current = tree.leftchild(node);
         unsigned int right = tree.rightchild(node);
 
-//#pragma omp parallel for schedule(static)
-        
         for(unsigned int i = 0; i < table.n_samples; i++){
             props.push_back(0);
         }
@@ -80,7 +76,7 @@ std::vector<double> su::set_proportions(const BPTree &tree,
         while(current <= right && current != 0) {
             std::vector<double> vec = ps.get(current);  // pull from prop map
             ps.clear(current);  // remove from prop map, place back on stack
-//#pragma omp parallel for schedule(static)
+            
             for(unsigned int i = 0; i < table.n_samples; i++)
                 props[i] = props[i] + vec[i];
             

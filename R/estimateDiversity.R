@@ -115,10 +115,24 @@
     vegan::fisher.alpha(t(mat))
 }
 
-.calc_faith <- function(mat, tree, only.tips = FALSE, ...){
+# These tags are required to enable the use of Rcpp in the package
+#' @useDynLib mia
+#' @importFrom Rcpp sourceCpp
+NULL
+
+.calc_faith <- function(mat, tree, only.tips = FALSE, fast_faith = TRUE, ...){
     # Input check
     if( !.is_a_bool(only.tips) ){
         stop("'only.tips' must be TRUE or FALSE.", call. = FALSE)
+    }
+    if( !.is_a_bool(fast_faith) ){
+        stop("'fast_faith' must be TRUE or FALSE.", call. = FALSE)
+    }
+    # If using fast algorithm, check that the tree is rooted
+    if(fast_faith && !is.rooted(tree) ){
+        stop("The fast C++ algorithm currently only works on rooted trees. ",
+             "Use fast_faith = FALSE for unrooted trees.",
+             call. = FALSE)
     }
     #
     # Remove internal nodes if specified
@@ -128,6 +142,11 @@
     # To ensure that the function works with NA also, convert NAs to 0.
     # Zero means that the taxon is not present --> same as NA (no information)
     mat[ is.na(mat) ] <- 0
+    
+    # Use fast algorithm if requested
+    if( fast_faith ){
+        return(faith_cpp(mat, tree))
+    }
 
     # Gets vector where number represent nth sample
     samples <- seq_len(ncol(mat))

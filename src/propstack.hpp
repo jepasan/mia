@@ -14,13 +14,13 @@
 #include <stack>
 #include <unordered_map>
 
-#include "tse.hpp"
+#include "tree.hpp"
+#include "assay.hpp"
 
 namespace su {
 
  class PropStack {
    private:
-     std::stack<std::vector<double>> prop_stack;
      std::unordered_map<uint32_t, std::vector<double>> prop_map;
      uint32_t defaultsize;
    public:
@@ -32,7 +32,7 @@ namespace su {
  };
 
  std::vector<double> set_proportions(const BPTree &tree, uint32_t node,
-                      const tse &table,
+                      const Assay &table,
                       PropStack &ps,
                       bool normalize = true);
 }

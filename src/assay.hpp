@@ -7,8 +7,8 @@
  * See LICENSE file for more details
  */
 
-#ifndef __FAITH_TSE_H
-#define __FAITH_TSE_H 1
+#ifndef __FAITH_ASSAY_H
+#define __FAITH_ASSAY_H 1
 
 #include <vector>
 #include <unordered_map>
@@ -16,7 +16,7 @@
 #include <Rcpp.h>
 
 namespace su {
-    class tse {
+    class Assay {
         public:
             // cache the IDs contained within the table
             std::vector<std::string> sample_ids;
@@ -30,13 +30,13 @@ namespace su {
              *
              * @param treeSE An R TreeSummarizedExperiment object
              */
-            tse(const Rcpp::S4 & treeSE);
+            Assay(const Rcpp::NumericMatrix & assay, const Rcpp::List & rowTree);
 
             /* default destructor
              *
              * Temporary arrays are freed
              */
-            ~tse();
+            ~Assay();
 
             /* get a dense vector of observation data
              *
@@ -48,7 +48,7 @@ namespace su {
             std::vector<double> get_obs_data(const std::string &id) const;
 
         private:
-            Rcpp::NumericMatrix assay; // Access to the raw sample counts in R's memory
+            Rcpp::NumericMatrix table; // Access to the raw sample counts in R's memory
 
             std::vector<double> get_sample_counts();
 
@@ -69,5 +69,5 @@ namespace su {
      };
 }
 
-#endif /* __FAITH_TSE_H */
+#endif /* __FAITH_ASSAY_H */
 

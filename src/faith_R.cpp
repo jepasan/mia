@@ -3,7 +3,7 @@
 
 #include <Rcpp.h>
 
-#include "tse.hpp"
+#include "assay.hpp"
 #include "tree.hpp"
 #include "propstack.hpp"
 
@@ -25,10 +25,10 @@
  * 
  */
 // [[Rcpp::export]]
-Rcpp::NumericVector faith_cpp(const Rcpp::S4 & treeSE){
+Rcpp::NumericVector faith_cpp(const Rcpp::NumericMatrix & assay, const Rcpp::List & rowTree){
     
-    su::BPTree tree = su::BPTree(treeSE);      
-    su::tse table = su::tse(treeSE);
+    su::BPTree tree = su::BPTree(rowTree);      
+    su::Assay table = su::Assay(assay, rowTree);
     
     su::PropStack propstack(table.n_samples);
     
@@ -46,10 +46,12 @@ Rcpp::NumericVector faith_cpp(const Rcpp::S4 & treeSE){
         length = tree.lengths[node];
         
         // get node proportions and set intermediate scores
-        node_proportions = set_proportions(tree, node, table, propstack);
+        node_proportions = set_proportions(tree, node, table, propstack); // this would probably be the most likely culprit for something going wrong
         
         for (unsigned int sample = 0; sample < table.n_samples; sample++){
             // calculate contribution of node to score
+            // Is it possible to somehow set the proportions to 0 if we're dealing with the root in a include.root=FALSE scenario?
+            //if(sample == 0) std::cout << k << " " << node_proportions[sample] << " " << (node_proportions[sample] > 0) << " " << length << "\n";
             results[sample] += (node_proportions[sample] > 0) * length;
         }
     }

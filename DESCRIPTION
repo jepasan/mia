@@ -86,7 +86,8 @@ Imports:
     tibble,
     tidyr,
     utils,
-    vegan
+    vegan,
+    Rcpp
 Suggests:
     ade4,
     BiocStyle,
@@ -107,6 +108,8 @@ Suggests:
     topicdoc,
     topicmodels,
     yaml
+LinkingTo:
+    Rcpp
 URL: https://github.com/microbiome/mia
 BugReports: https://github.com/microbiome/mia/issues
 Roxygen: list(markdown = TRUE)

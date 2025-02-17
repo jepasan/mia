@@ -27,7 +27,7 @@ BPTree::BPTree(std::vector<bool> input_structure, std::vector<double> input_leng
     index_and_cache();
 }
 
-BPTree::BPTree(const Rcpp::S4 & treeSE) {
+BPTree::BPTree(const Rcpp::List & rowTree) {
     
     //Initialize vectors
     openclose = std::vector<uint32_t>();
@@ -41,7 +41,6 @@ BPTree::BPTree(const Rcpp::S4 & treeSE) {
     //Load the tree structure
     structure = std::vector<bool>();
     structure.reserve(500000);  // a fair sized tree... avoid reallocs, and its not _that_ much waste if this is wrong
-    const Rcpp::List & rowTree = treeSE.slot("rowTree");
     rowTree_to_bp(rowTree); //Also sets the size of nparens
     
     //Resize vectors
@@ -284,8 +283,7 @@ int32_t BPTree::bwd(uint32_t i, int d) const {
 // Need to check whether tree being rooted or not affects construction
 // If rooted, root is by definition ntips+1
 // If unrooted, root is chosen arbitrarily?
-void BPTree::rowTree_to_bp(const Rcpp::List & rowTree) {
-    Rcpp::List phylo = rowTree["phylo"];
+void BPTree::rowTree_to_bp(const Rcpp::List & phylo) {
     Rcpp::NumericMatrix edge = phylo["edge"];
     Rcpp::StringVector tips = phylo["tip.label"];
     
@@ -293,12 +291,12 @@ void BPTree::rowTree_to_bp(const Rcpp::List & rowTree) {
     
     std::stack<unsigned int> nodes; // Keeps track of the branch's internal nodes
     
-    int currentNode = 0;
-    int nextNode = 0;
+    unsigned int currentNode = 0;
+    unsigned int nextNode = 0;
     
     // Goal: Insert true when a branch starts, a false when it closes, and a true-false for each tip.
     
-    for (unsigned int i = 0; i < edge.nrow(); i++){
+    for (int i = 0; i < edge.nrow(); i++){
         currentNode = edge(i, 0);
         nextNode = edge(i, 1);
         
@@ -357,8 +355,7 @@ void BPTree::structure_to_openclose() {
 //edge.length has (nodes + tips) elements - leaves at the start, nodes at the end
 //tip.label has (tips) elements
 //root.edge and node.labels are optional, giving the length of the root and the internal node (including root) labels, respectively
-void BPTree::rowTree_to_metadata(const Rcpp::List & rowTree) {
-    Rcpp::List phylo = rowTree["phylo"];
+void BPTree::rowTree_to_metadata(const Rcpp::List & phylo) {
     Rcpp::NumericVector edgelength = phylo["edge.length"];
     Rcpp::NumericMatrix edges = phylo["edge"];
     Rcpp::StringVector tips = phylo["tip.label"];
@@ -387,7 +384,6 @@ void BPTree::rowTree_to_metadata(const Rcpp::List & rowTree) {
     
     unsigned int tip_idx = 0; // tip indices run from 0 to ntips-1
     unsigned int node_idx = 0; // node indices run from ntips to ntips + nnodes - 1
-    unsigned int edge_idx = 0; // Used to store the index of the edge for picking lengths;
     
     for(unsigned int i = 0; i < structure.size(); i++) {
         if(structure[i]){

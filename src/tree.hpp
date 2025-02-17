@@ -40,7 +40,7 @@ namespace su {
              *
              * @param treeSE An R treeSE object
              */
-            BPTree(const Rcpp::S4 & treeSE);
+            BPTree(const Rcpp::List & rowTree);
             
             ~BPTree();
 
@@ -124,8 +124,8 @@ namespace su {
             std::vector<uint32_t> excess;
 
             void index_and_cache();  // construct the select caches
-            void rowTree_to_bp(const Rcpp::List & rowTree); // convert ape tree structure to boolean structure
-            void rowTree_to_metadata(const Rcpp::List & rowTree);  // assign attributes
+            void rowTree_to_bp(const Rcpp::List & phylo); // convert ape tree structure to boolean structure
+            void rowTree_to_metadata(const Rcpp::List & phylo);  // assign attributes
             void newick_to_metadata(std::string newick);  // convert newick to attributes
             void structure_to_openclose();  // set the cache mapping between parentheses pairs
             void set_node_metadata(unsigned int open_idx, std::string label, double length); // set attributes for a node
