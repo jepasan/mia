@@ -4,7 +4,7 @@ information in its colData or rowData"><!-- mathjax --><script src="https://cdnj
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -18,7 +18,7 @@ information in its colData or rowData"><!-- mathjax --><script src="https://cdnj
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">mia</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.13.22</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.15.23</span>
       </span>
     </div>
 
@@ -32,20 +32,20 @@ information in its colData or rowData"><!-- mathjax --><script src="https://cdnj
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/microbiome/mia/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Clustering wrapper</h1>
-    <small class="dont-index">Source: <a href="https://github.com/microbiome/mia/blob/HEAD/R/cluster.R" class="external-link"><code>R/cluster.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/microbiome/mia/blob/master/R/AllGenerics.R" class="external-link"><code>R/AllGenerics.R</code></a>, <a href="https://github.com/microbiome/mia/blob/master/R/cluster.R" class="external-link"><code>R/cluster.R</code></a></small>
     <div class="hidden name"><code>addCluster.Rd</code></div>
     </div>
 
@@ -60,20 +60,22 @@ information in its colData or rowData</p>
 <span>  <span class="va">BLUSPARAM</span>,</span>
 <span>  assay.type <span class="op">=</span> <span class="va">assay_name</span>,</span>
 <span>  assay_name <span class="op">=</span> <span class="st">"counts"</span>,</span>
-<span>  MARGIN <span class="op">=</span> <span class="st">"features"</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">MARGIN</span>,</span>
+<span>  MARGIN <span class="op">=</span> <span class="st">"rows"</span>,</span>
 <span>  full <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  name <span class="op">=</span> <span class="st">"clusters"</span>,</span>
 <span>  clust.col <span class="op">=</span> <span class="st">"clusters"</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># S4 method for SummarizedExperiment</span></span>
+<span><span class="co"># S4 method for class 'SummarizedExperiment'</span></span>
 <span><span class="fu">addCluster</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  <span class="va">BLUSPARAM</span>,</span>
 <span>  assay.type <span class="op">=</span> <span class="va">assay_name</span>,</span>
 <span>  assay_name <span class="op">=</span> <span class="st">"counts"</span>,</span>
-<span>  MARGIN <span class="op">=</span> <span class="st">"features"</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">MARGIN</span>,</span>
+<span>  MARGIN <span class="op">=</span> <span class="st">"rows"</span>,</span>
 <span>  full <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  name <span class="op">=</span> <span class="st">"clusters"</span>,</span>
 <span>  clust.col <span class="op">=</span> <span class="st">"clusters"</span>,</span>
@@ -83,74 +85,69 @@ information in its colData or rowData</p>
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>x</dt>
+
+
+<dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>A
 <code><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a></code>
 object.</p></dd>
 
 
-<dt>BLUSPARAM</dt>
+<dt id="arg-blusparam">BLUSPARAM<a class="anchor" aria-label="anchor" href="#arg-blusparam"></a></dt>
 <dd><p>A <a href="https://rdrr.io/pkg/bluster/man/BlusterParam-class.html" class="external-link">BlusterParam</a> object specifying the algorithm to use.</p></dd>
 
 
-<dt>assay.type</dt>
-<dd><p>a single <code>character</code> value for specifying which
-assay to use for calculation.</p></dd>
+<dt id="arg-assay-type">assay.type<a class="anchor" aria-label="anchor" href="#arg-assay-type"></a></dt>
+<dd><p><code>Character scalar</code>. Specifies the name of the
+assay used in calculation. (Default: <code>"counts"</code>)</p></dd>
 
 
-<dt>assay_name</dt>
-<dd><p>a single <code>character</code> value for specifying which
-assay to use for calculation.
-(Please use <code>assay.type</code> instead. At some point <code>assay_name</code>
-will be disabled.)</p></dd>
+<dt id="arg-assay-name">assay_name<a class="anchor" aria-label="anchor" href="#arg-assay-name"></a></dt>
+<dd><p>Deprecated. Use <code>assay.type</code> instead.</p></dd>
 
 
-<dt>MARGIN</dt>
-<dd><p>A single character value for specifying whether the
-transformation is applied sample (column) or feature (row) wise.
-(By default: <code>MARGIN = "samples"</code>)</p></dd>
+<dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
+<dd><p><code>Character scalar</code>. Determines if association is calculated
+row-wise / for features ('rows') or column-wise / for samples ('cols').
+Must be <code>'rows'</code> or <code>'cols'</code>.</p></dd>
 
 
-<dt>full</dt>
+<dt id="arg-margin">MARGIN<a class="anchor" aria-label="anchor" href="#arg-margin"></a></dt>
+<dd><p>Deprecated. Use <code>by</code> instead.</p></dd>
+
+
+<dt id="arg-full">full<a class="anchor" aria-label="anchor" href="#arg-full"></a></dt>
 <dd><p>Logical scalar indicating whether the full clustering statistics should be returned for each method.</p></dd>
 
 
-<dt>name</dt>
-<dd><p>the name to store the result in
+<dt id="arg-name">name<a class="anchor" aria-label="anchor" href="#arg-name"></a></dt>
+<dd><p><code>Character scalar</code>. The name to store the result in
 <code><a href="https://rdrr.io/pkg/SummarizedExperiment/man/RangedSummarizedExperiment-class.html" class="external-link">metadata</a></code></p></dd>
 
 
-<dt>clust.col</dt>
-<dd><p>A single character value indicating the name of the
-<code>rowData</code> (or <code>colData</code>) where the data will be stored.</p></dd>
+<dt id="arg-clust-col">clust.col<a class="anchor" aria-label="anchor" href="#arg-clust-col"></a></dt>
+<dd><p><code>Character scalar</code>. Indicates the name of the
+<code>rowData</code> (or <code>colData</code>) where the data will be stored.
+(Default: <code>"clusters"</code>)</p></dd>
 
 
-<dt>...</dt>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional parameters to use altExps for example</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p><code>addCluster</code> returns an object of the same type as the <code>x</code> parameter
-with clustering information named <code>clusters</code> stored in <code>colData</code></p>
-
-
-<p>or <code>rowData</code>.</p>
+    <p><code>addCluster</code> returns an object of the same type as the <code>x</code>
+parameter with clustering information named <code>clusters</code> stored in
+<code>colData</code> or <code>rowData</code>.</p>
     </div>
     <div id="details">
     <h2>Details</h2>
     <p>This is a wrapper for the <code>clusterRows</code> function from the
-bluster
-package.</p>
+<a href="https://rdrr.io/pkg/bluster/man/bluster-package.html" class="external-link">bluster</a> package.</p>
 <p>When setting <code>full = TRUE</code>, the clustering information will be stored in
 the metadata of the object.</p>
 <p>By default, clustering is done on the features.</p>
-    </div>
-    <div id="author">
-    <h2>Author</h2>
-    <p>Basil Courbayre</p>
     </div>
 
     <div id="ref-examples">
@@ -163,8 +160,8 @@ the metadata of the object.</p>
 <span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu">addCluster</span><span class="op">(</span><span class="va">tse</span>, <span class="fu"><a href="https://rdrr.io/pkg/bluster/man/KmeansParam-class.html" class="external-link">KmeansParam</a></span><span class="op">(</span>centers <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Clustering done on the samples using Hclust</span></span></span>
-<span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu">addCluster</span><span class="op">(</span><span class="va">tse</span>, </span></span>
-<span class="r-in"><span>               MARGIN <span class="op">=</span> <span class="st">"samples"</span>, </span></span>
+<span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu">addCluster</span><span class="op">(</span><span class="va">tse</span>,</span></span>
+<span class="r-in"><span>               by <span class="op">=</span> <span class="st">"samples"</span>,</span></span>
 <span class="r-in"><span>               <span class="fu"><a href="https://rdrr.io/pkg/bluster/man/HclustParam-class.html" class="external-link">HclustParam</a></span><span class="op">(</span>metric <span class="op">=</span> <span class="st">"bray"</span>, dist.fun <span class="op">=</span> <span class="fu">vegan</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegdist</a></span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Getting the clusters</span></span></span>
@@ -189,19 +186,19 @@ the metadata of the object.</p>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Felix G.M. Ernst, Sudarshan A. Shetty, Tuomas Borman, Leo Lahti.</p>
+  <p></p><p>Developed by Tuomas Borman, Felix G.M. Ernst, Sudarshan A. Shetty, Leo Lahti.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 
