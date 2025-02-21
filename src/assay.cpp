@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <vector>
 
-#include "assay.hpp"
+#include "assay.h"
 
 #include <Rcpp.h>
 

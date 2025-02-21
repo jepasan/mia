@@ -3,9 +3,9 @@
 
 #include <Rcpp.h>
 
-#include "assay.hpp"
-#include "tree.hpp"
-#include "propmap.hpp"
+#include "assay.h"
+#include "tree.h"
+#include "propmap.h"
 
 
 /* Access the C++ implementation of the fast Faith's PD algorithm from R

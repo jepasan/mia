@@ -14,8 +14,8 @@
 #include <stack>
 #include <unordered_map>
 
-#include "tree.hpp"
-#include "assay.hpp"
+#include "tree.h"
+#include "assay.h"
 
 namespace su {
 

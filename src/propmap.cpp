@@ -7,9 +7,9 @@
  * See LICENSE file for more details
  */
 
-#include "tree.hpp"
-#include "assay.hpp"
-#include "propmap.hpp"
+#include "tree.h"
+#include "assay.h"
+#include "propmap.h"
 
 #include <cstdlib>
 #include <thread>
