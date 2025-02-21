@@ -10,3 +10,8 @@ unifrac.o
 unifrac_internal.o
 unifrac_internal_s.o
 unifrac_s.o
+RcppExports.o
+assay.o
+faith_R.o
+propmap.o
+mia.dll
