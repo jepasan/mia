@@ -9,29 +9,26 @@ sourceCpp(source)
 
 data(GlobalPatterns, package = "mia") # Matches flawlessly, no difference between picantes
 data(esophagus, package = "mia") # Matches flawlessly, no difference between picantes
-data(Tengeler2020, package = "mia") # Wrong values, probably due to the tree being unrooted - can be left for the old code? Reroot tree?
-tse <- Tengeler2020
+data(Tengeler2020, package = "mia") # Seems to work fine now, despite the tree being unrooted
+tse <- GlobalPatterns
 
-tse <- microbiomeDataSets::artificialgut() # This fails every comparison - probably not the zero-length edges, since they work fine in the others
-tse <- microbiomeDataSets::baboongut() # fails every comparison
-tse <- microbiomeDataSets::SprockettTHData() # But this one matches picante with include.root=TRUE! So whether or not to include root is ONE issue, at least.
-rowTree(tse) <- ape::reorder.phylo(rowTree(tse), "cladewise")
+tse <- microbiomeDataSets::artificialgut() # All good (minor differences)
+tse <- microbiomeDataSets::baboongut() # All good (minor differences)
+tse <- microbiomeDataSets::SprockettTHData() # Matches picante with include.root=TRUE
+tse <- microbiomeDataSets::GrieneisenTSData() # All good (minor differences)
+tse <- microbiomeDataSets::qa10934() # Matches picante with include.root=TRUE
+tse <- microbiomeDataSets::SilvermanAGutData() # All good (minor differences)
 
-ts1 <- rowTree(tse)
+library(biomformat)
+biom <- read_biom("/home/grunnar/downloads/con/finrisk.biom")
+tree <- ape::read.tree("/home/grunnar/downloads/con/anonymized-finrisk-16S-BL_AGE.tre")
+tse <- convertFromBIOM(biom)
+rowTree(tse) <- tree
+tse <- tse[1:100,1:100]
 
-fname <- "R/unifrac_cpp/R_interface/tree.tre"
-ape::write.tree(ts1, fname)
-
-newick <- readChar(fname, file.info(fname)$size)
-
-y <- rowTree_to_bp(ts1)
-x <- newick_to_bp(newick)
-
-
-
-x <- estimateFaith(tse, index="faith", fast_faith=TRUE)
+x <- addAlpha(tse, index="faith", fast_faith=TRUE)
 faith <- colData(x)$faith
-x2 <- estimateFaith(tse, index="faith", fast_faith=FALSE, only.tips = TRUE)
+x2 <- addAlpha(tse, index="faith", fast_faith=FALSE)
 faith2 <- colData(x2)$faith
 x3 <- picante::pd(t(assay(tse)), rowTree(tse), include.root = TRUE)
 faith3 <- as.vector(x3[[1]])
@@ -48,6 +45,7 @@ faith3 - faith4
 sum(abs(faith-faith2) > 0.00000001)
 sum(abs(faith-faith3) > 0.00000001)
 sum(abs(faith-faith4) > 0.00000001)
+
 
 ape::write.tree(rowTree(tse), "//utuhome.utu.fi/jealpa/downloads/agut.tre")
 write.biom()
@@ -76,7 +74,7 @@ picante::pd(t(ass), tree, include.root = FALSE)[1]
 
 
 samples <- 10
-obs <- 200
+obs <- 2000
 tree <- ape::rtree(obs)
 obsnames <- tree$tip.label
 samplenames <- paste0("s", 1:samples)
@@ -93,9 +91,9 @@ rownames(testtree) <- obsnames
 colnames(testtree) <- samplenames
 rowTree(testtree) <- tree
 
-z <- estimateFaith(testtree, index="faith", fast_faith=TRUE)
+z <- addAlpha(testtree, index="faith", fast_faith=TRUE)
 faith_r <- colData(z)$faith
-z2 <- estimateFaith(testtree, index="faith", fast_faith=FALSE)
+z2 <- addAlpha(testtree, index="faith", fast_faith=FALSE)
 faith_r2 <- colData(z2)$faith
 z3 <- picante::pd(t(assay(testtree)), rowTree(testtree), include.root = TRUE)
 faith_r3 <- as.vector(z3[[1]])
@@ -223,3 +221,4 @@ nodes <- present[[7]]
     })
     faiths_for_taxa_present <- unlist(faiths_for_taxa_present)
     faiths[ind] <- faiths_for_taxa_present
+    

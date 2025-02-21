@@ -18,7 +18,7 @@
 
 using namespace su;
 
-Assay::Assay(const Rcpp::NumericMatrix & assay, const Rcpp::List & rowTree) {
+Assay::Assay(const Rcpp::NumericMatrix & assay) {
     table = assay;
     
     sample_ids = std::vector<std::string>(); 
@@ -27,9 +27,9 @@ Assay::Assay(const Rcpp::NumericMatrix & assay, const Rcpp::List & rowTree) {
     Rcpp::StringVector colnames = Rcpp::colnames(table);
     sample_ids = Rcpp::as<std::vector<std::string>>(colnames);
     
-    Rcpp::StringVector tip_label = rowTree["tip.label"];
-    obs_ids = Rcpp::as<std::vector<std::string>>(tip_label);
-
+    Rcpp::StringVector rownames = Rcpp::rownames(table);
+    obs_ids = Rcpp::as<std::vector<std::string>>(rownames);
+     
     n_samples = sample_ids.size();
     n_obs = obs_ids.size();
 

@@ -30,7 +30,7 @@ namespace su {
              *
              * @param treeSE An R TreeSummarizedExperiment object
              */
-            Assay(const Rcpp::NumericMatrix & assay, const Rcpp::List & rowTree);
+            Assay(const Rcpp::NumericMatrix & assay);
 
             /* default destructor
              *

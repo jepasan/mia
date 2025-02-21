@@ -120,6 +120,7 @@
 #' @importFrom Rcpp sourceCpp
 NULL
 
+#' @importFrom ape reorder.phylo
 .calc_faith <- function(mat, tree, only.tips = FALSE, fast_faith = TRUE, ...){
     # Input check
     if( !.is_a_bool(only.tips) ){
@@ -128,13 +129,6 @@ NULL
     if( !.is_a_bool(fast_faith) ){
         stop("'fast_faith' must be TRUE or FALSE.", call. = FALSE)
     }
-    # If using fast algorithm, check that the tree is rooted
-    if(fast_faith && !is.rooted(tree) ){
-        stop("The fast C++ algorithm currently only works on rooted trees. ",
-             "Use fast_faith = FALSE for unrooted trees.",
-             call. = FALSE)
-    }
-    #
     # Remove internal nodes if specified
     if( only.tips ){
         mat <- mat[ rownames(mat) %in% tree$tip.label, ]
@@ -145,7 +139,9 @@ NULL
     
     # Use fast algorithm if requested
     if( fast_faith ){
-        return(faith_cpp(mat, tree))
+        # The tree must be in cladewise order for the algorithm to work correctly
+        temp <- reorder.phylo(tree, "cladewise")
+        return(faith_cpp(mat, temp))
     }
 
     # Gets vector where number represent nth sample

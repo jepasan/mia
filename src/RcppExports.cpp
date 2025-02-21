@@ -22,9 +22,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sumrowt
+double sumrowt(const Rcpp::List& rowTree);
+RcppExport SEXP _mia_sumrowt(SEXP rowTreeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type rowTree(rowTreeSEXP);
+    rcpp_result_gen = Rcpp::wrap(sumrowt(rowTree));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_mia_faith_cpp", (DL_FUNC) &_mia_faith_cpp, 2},
+    {"_mia_sumrowt", (DL_FUNC) &_mia_sumrowt, 1},
     {NULL, NULL, 0}
 };
 

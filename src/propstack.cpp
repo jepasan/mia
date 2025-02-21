@@ -57,8 +57,13 @@ std::vector<double> su::set_proportions(const BPTree &tree,
                          bool normalize) {
     
     std::vector<double> props = std::vector<double>();
+    
+    //propstack.clear(node); the current node is popped from propstack at every loop, replacing the vector with an empty one that then gets filled...
+  
+  
     if(tree.isleaf(node)) {
         std::string leaf = tree.names[node];
+      
         props = table.get_obs_data(leaf); // Here we basically just need the row for the specified node
         if (normalize) {
             for(unsigned int i = 0; i < table.n_samples; i++) {
@@ -72,6 +77,7 @@ std::vector<double> su::set_proportions(const BPTree &tree,
         for(unsigned int i = 0; i < table.n_samples; i++){
             props.push_back(0);
         }
+        ps.update(node, props);
         
         while(current <= right && current != 0) {
             std::vector<double> vec = ps.get(current);  // pull from prop map
@@ -79,11 +85,10 @@ std::vector<double> su::set_proportions(const BPTree &tree,
             
             for(unsigned int i = 0; i < table.n_samples; i++)
                 props[i] = props[i] + vec[i];
+            ps.update(node, props);
             
             current = tree.rightsibling(current);
         }
-        
-        //std::cout << "n " << props[0] << " " << props[1] << " " << props[2] << "\n";
         
     }
     ps.update(node, props);
