@@ -138,4 +138,3 @@ namespace su {
 }
 
 #endif /* __FAITH_TREE_H */
-

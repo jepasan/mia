@@ -9,7 +9,7 @@
 
 #include "tree.hpp"
 #include "assay.hpp"
-#include "propstack.hpp"
+#include "propmap.hpp"
 
 #include <cstdlib>
 #include <thread>
@@ -23,17 +23,17 @@
 
 using namespace su;
 
-PropStack::PropStack(uint32_t vecsize) 
+PropMap::PropMap(uint32_t vecsize) 
 : prop_map()
 , defaultsize(vecsize)
 {
     prop_map.reserve(1000);
 }
 
-PropStack::~PropStack() {
+PropMap::~PropMap() {
 }
 
-std::vector<double> PropStack::get(uint32_t i) {
+std::vector<double> PropMap::get(uint32_t i) {
     if(prop_map.count(i) > 0){
         return prop_map.at(i);
     }
@@ -42,28 +42,23 @@ std::vector<double> PropStack::get(uint32_t i) {
     } 
 }
 
-void PropStack::clear(uint32_t i) {
+void PropMap::clear(uint32_t i) {
     prop_map[i] = std::vector<double>();
 }
 
-void PropStack::update(uint32_t node, std::vector<double> vec) {
+void PropMap::update(uint32_t node, std::vector<double> vec) {
     prop_map[node] = vec;
 }
 
 std::vector<double> su::set_proportions(const BPTree &tree,
                          uint32_t node,
                          const Assay &table,
-                         PropStack &ps,
+                         PropMap &ps,
                          bool normalize) {
     
     std::vector<double> props = std::vector<double>();
-    
-    //propstack.clear(node); the current node is popped from propstack at every loop, replacing the vector with an empty one that then gets filled...
-  
-  
     if(tree.isleaf(node)) {
         std::string leaf = tree.names[node];
-      
         props = table.get_obs_data(leaf); // Here we basically just need the row for the specified node
         if (normalize) {
             for(unsigned int i = 0; i < table.n_samples; i++) {
@@ -77,7 +72,6 @@ std::vector<double> su::set_proportions(const BPTree &tree,
         for(unsigned int i = 0; i < table.n_samples; i++){
             props.push_back(0);
         }
-        ps.update(node, props);
         
         while(current <= right && current != 0) {
             std::vector<double> vec = ps.get(current);  // pull from prop map
@@ -85,10 +79,11 @@ std::vector<double> su::set_proportions(const BPTree &tree,
             
             for(unsigned int i = 0; i < table.n_samples; i++)
                 props[i] = props[i] + vec[i];
-            ps.update(node, props);
             
             current = tree.rightsibling(current);
         }
+        
+        //std::cout << "n " << props[0] << " " << props[1] << " " << props[2] << "\n";
         
     }
     ps.update(node, props);

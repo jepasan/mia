@@ -70,4 +70,3 @@ namespace su {
 }
 
 #endif /* __FAITH_ASSAY_H */
-

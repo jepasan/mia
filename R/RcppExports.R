@@ -5,7 +5,3 @@ faith_cpp <- function(assay, rowTree) {
     .Call('_mia_faith_cpp', PACKAGE = 'mia', assay, rowTree)
 }
 
-sumrowt <- function(rowTree) {
-    .Call('_mia_sumrowt', PACKAGE = 'mia', rowTree)
-}
-

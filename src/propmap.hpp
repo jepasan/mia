@@ -7,8 +7,8 @@
  * See LICENSE file for more details
  */
 
-#ifndef __FAITH_PROPSTACK
-#define __FAITH_PROPSTACK 1
+#ifndef __FAITH_PROPMAP
+#define __FAITH_PROPMAP 1
 
 #include <vector>
 #include <stack>
@@ -19,13 +19,13 @@
 
 namespace su {
 
- class PropStack {
+ class PropMap {
    private:
      std::unordered_map<uint32_t, std::vector<double>> prop_map;
      uint32_t defaultsize;
    public:
-     PropStack(uint32_t vecsize);
-     virtual ~PropStack();
+     PropMap(uint32_t vecsize);
+     virtual ~PropMap();
      void clear(uint32_t i);
      void update(uint32_t i, std::vector<double> vec);
      std::vector<double> get(uint32_t i);
@@ -33,8 +33,8 @@ namespace su {
 
  std::vector<double> set_proportions(const BPTree &tree, uint32_t node,
                       const Assay &table,
-                      PropStack &ps,
+                      PropMap &ps,
                       bool normalize = true);
 }
 
-#endif /* __FAITH_PROPSTACK */
+#endif /* __FAITH_PROPMAP */

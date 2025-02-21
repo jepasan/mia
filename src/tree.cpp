@@ -154,37 +154,6 @@ BPTree BPTree::collapse() {
 
     return this->mask(collapsemask, new_lengths);
 }
-   /*
-        mask = bit_array_create(self.B.size)
-        bit_array_set_bit(mask, self.root())
-        bit_array_set_bit(mask, self.close(self.root()))
-
-        new_lengths = self._lengths.copy()
-        new_lengths_ptr = <DOUBLE_t*>new_lengths.data
-
-        with nogil:
-            for i in range(n):
-                current = self.preorderselect(i)
-
-                if self.isleaf(current):
-                    bit_array_set_bit(mask, current)
-                    bit_array_set_bit(mask, self.close(current))
-                else:
-                    first = self.fchild(current)
-                    last = self.lchild(current)
-
-                    if first == last:
-                        new_lengths_ptr[first] = new_lengths_ptr[first] + \
-                                new_lengths_ptr[current]
-                    else:
-                        bit_array_set_bit(mask, current)
-                        bit_array_set_bit(mask, self.close(current))
-
-        new_bp = self._mask_from_self(mask, new_lengths)
-        bit_array_free(mask)
-        return new_bp
-*/ 
-
 
 BPTree::~BPTree() {
 }
@@ -278,18 +247,20 @@ int32_t BPTree::bwd(uint32_t i, int d) const {
 }
 
 // The algorithms that this class uses need the tree to be stored in a binary format
-// In terms of the Newick format, an opening bracket corresponds to a TRUE, a closing bracket to a FALSE, and a tip to a TRUE FALSE
-// This functions assumes that the tree representation is in cladewise order - Ensure this with ape's reorder.phylo() function
-// Need to check whether tree being rooted or not affects construction
-// If rooted, root is by definition ntips+1
-// If unrooted, root is chosen arbitrarily?
+// In terms of the Newick format, an opening bracket corresponds to a TRUE,
+// a closing bracket to a FALSE, and a tip to a TRUE FALSE
+// This function assumes that the tree representation is in cladewise order -
+// Ensure this with ape's reorder.phylo() function
+// Seems to work whether or not the tree is rooted
 void BPTree::rowTree_to_bp(const Rcpp::List & phylo) {
     Rcpp::NumericMatrix edge = phylo["edge"];
     Rcpp::StringVector tips = phylo["tip.label"];
     
-    uint32_t ntips = tips.size(); // phylo tips are always numbered from 1 to number of tips;
+    // phylo tips are always numbered from 1 to number of tips;
+    uint32_t ntips = tips.size();
     
-    std::stack<unsigned int> nodes; // Keeps track of the branch's internal nodes
+    // Keeps track of the branch's internal nodes
+    std::stack<unsigned int> nodes; 
     
     unsigned int currentNode = 0;
     unsigned int nextNode = 0;
@@ -310,7 +281,6 @@ void BPTree::rowTree_to_bp(const Rcpp::List & phylo) {
         
         if(nodes.size() == 0 || currentNode > nodes.top() ) {
             // We are either at the root, or entering a new node
-            // What if the tree is unrooted?
             nodes.push(currentNode);
             structure.push_back(true);
             
@@ -350,11 +320,13 @@ void BPTree::structure_to_openclose() {
     }
 }
 
-//Add metadata (lengths and names) to the tree representation
-//I think we can just iterate through the structure, and whenever we hit a true decide if it's a leaf or not, and then add the corresponding label/length
-//edge.length has (nodes + tips) elements - leaves at the start, nodes at the end
-//tip.label has (tips) elements
-//root.edge and node.labels are optional, giving the length of the root and the internal node (including root) labels, respectively
+// Add metadata (lengths and names) to the tree representation
+// Iterate through the structure, and whenever we hit a true decide if
+// it's a leaf or not, and then add the corresponding label/length
+// edge.length has (nodes + tips) elements - leaves at the start, nodes at the end
+// tip.label has (tips) elements
+// root.edge and node.labels are optional, giving the length of the root and
+// the internal node (including root) labels, respectively
 void BPTree::rowTree_to_metadata(const Rcpp::List & phylo) {
     Rcpp::NumericVector edgelength = phylo["edge.length"];
     Rcpp::NumericMatrix edges = phylo["edge"];
@@ -424,4 +396,3 @@ std::vector<bool> BPTree::get_structure() {
 std::vector<uint32_t> BPTree::get_openclose() {
     return openclose;
 }
-

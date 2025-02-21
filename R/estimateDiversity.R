@@ -121,13 +121,13 @@
 NULL
 
 #' @importFrom ape reorder.phylo
-.calc_faith <- function(mat, tree, only.tips = FALSE, fast_faith = TRUE, ...){
+.calc_faith <- function(mat, tree, only.tips = FALSE, fast.faith = TRUE, ...){
     # Input check
     if( !.is_a_bool(only.tips) ){
         stop("'only.tips' must be TRUE or FALSE.", call. = FALSE)
     }
-    if( !.is_a_bool(fast_faith) ){
-        stop("'fast_faith' must be TRUE or FALSE.", call. = FALSE)
+    if( !.is_a_bool(fast.faith) ){
+        stop("'fast.faith' must be TRUE or FALSE.", call. = FALSE)
     }
     # Remove internal nodes if specified
     if( only.tips ){
@@ -138,7 +138,7 @@ NULL
     mat[ is.na(mat) ] <- 0
     
     # Use fast algorithm if requested
-    if( fast_faith ){
+    if( fast.faith ){
         # The tree must be in cladewise order for the algorithm to work correctly
         temp <- reorder.phylo(tree, "cladewise")
         return(faith_cpp(mat, temp))
